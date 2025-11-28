@@ -1,0 +1,129 @@
+[11/28/25 00:19:58] INFO     Logging configured -    logging.py:191
+                             Level: INFO, Format:                  
+                             json, File:                           
+                             logs/app.log                          
+                    INFO     ========================== main.py:121
+                             ==========================            
+                             ==========================            
+                             ==                                    
+                    INFO     RAG-ENHANCED TRAVEL        main.py:122
+                             ASSISTANT                             
+                    INFO     ========================== main.py:123
+                             ==========================            
+                             ==========================            
+                             ==                                    
+                    INFO     Mode: both                 main.py:124
+                    INFO     Environment: development   main.py:125
+                    INFO     API Port: 8000             main.py:126
+                    INFO     UI Port: 7860              main.py:127
+                    INFO     ========================== main.py:128
+                             ==========================            
+                             ==========================            
+                             ==                                    
+                    INFO     Starting both API and UI... main.py:45
+[11/28/25 00:19:58] INFO     Logging configured -    logging.py:191
+                             Level: INFO, Format:                  
+                             json, File:                           
+                             logs/app.log                          
+[11/28/25 00:19:58] INFO     Logging configured -    logging.py:191
+                             Level: INFO, Format:                  
+                             json, File:                           
+                             logs/app.log                          
+[11/28/25 00:20:02] INFO     Logging configured -    logging.py:191
+                             Level: INFO, Format:                  
+                             json, File:                           
+                             logs/app.log                          
+                    INFO     Starting FastAPI server...  main.py:24
+INFO:     Started server process [85256]
+INFO:     Waiting for application startup.
+                    INFO     Starting RAG Travel         main.py:23
+                             Assistant API...                      
+                    INFO     Environment: development    main.py:24
+                    INFO     API Port: 8000              main.py:25
+INFO:     Application startup complete.
+ERROR:    [Errno 48] error while attempting to bind on address ('0.0.0.0', 8000): address already in use
+INFO:     Waiting for application shutdown.
+                    INFO     Shutting down RAG Travel    main.py:30
+                             Assistant API...                      
+INFO:     Application shutdown complete.
+[11/28/25 00:20:03] INFO     Logging configured -    logging.py:191
+                             Level: INFO, Format:                  
+                             json, File:                           
+                             logs/app.log                          
+                    INFO     Initializing Travel   gradio_app.py:15
+                             Assistant Agent for                   
+                             Gradio UI...                          
+                    INFO     Initializing      qdrant_service.py:40
+                             Qdrant service                        
+                    INFO     Initializing   embedding_service.py:19
+                             Sentence                              
+                             Transformers                          
+                             embedding                             
+                             service                               
+                    INFO     Use pytorch SentenceTransformer.py:219
+                             device_name                           
+                             : mps                                 
+                    INFO     Load        SentenceTransformer.py:227
+                             pretrained                            
+                             SentenceTra                           
+                             nsformer:                             
+                             all-MiniLM-                           
+                             L6-v2                                 
+[11/28/25 00:20:05] INFO     Sentence       embedding_service.py:29
+                             Transformers                          
+                             embedding                             
+                             service                               
+                             initialized                           
+                             successfully                          
+                    INFO     Search service    search_service.py:35
+                             initialized                           
+                    INFO     LLM service          llm_service.py:71
+                             initialized with                      
+                             model:                                
+                             gemini-2.0-flash                      
+                    INFO     RAG service          rag_service.py:35
+                             initialized                           
+                    INFO     Travel agent nodes         nodes.py:26
+                             initialized                           
+                    INFO     Travel assistant graph     graph.py:32
+                             initialized                           
+                    INFO     Agent initialized     gradio_app.py:17
+                             successfully                          
+                    INFO     Starting Gradio UI...       main.py:37
+                    INFO     Launching Travel     gradio_app.py:195
+                             Assistant UI on port                  
+                             7860...                               
+ERROR:    [Errno 48] error while attempting to bind on address ('0.0.0.0', 7860): address already in use
+Process Process-2:
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/process.py", line 313, in _bootstrap
+    self.run()
+    ~~~~~~~~^^
+  File "/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chittivijay/Documents/PythonAssignment_Day4/travel-assistant-rag/main.py", line 38, in run_ui
+    launch_ui(server_port=settings.ui_port, share=False)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/chittivijay/Documents/PythonAssignment_Day4/travel-assistant-rag/src/ui/gradio_app.py", line 196, in launch_ui
+    demo.launch(
+    ~~~~~~~~~~~^
+        server_name="0.0.0.0", server_port=server_port, share=share, show_error=True
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/chittivijay/Documents/PythonAssignment_Day4/travel-assistant-rag/.venv/lib/python3.13/site-packages/gradio/blocks.py", line 2666, in launch
+    ) = http_server.start_server(
+        ~~~~~~~~~~~~~~~~~~~~~~~~^
+        app=self.app,
+        ^^^^^^^^^^^^^
+    ...<4 lines>...
+        ssl_keyfile_password=ssl_keyfile_password,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/chittivijay/Documents/PythonAssignment_Day4/travel-assistant-rag/.venv/lib/python3.13/site-packages/gradio/http_server.py", line 182, in start_server
+    raise OSError(
+        f"Cannot find empty port in range: {min(server_ports)}-{max(server_ports)}. You can specify a different port by setting the GRADIO_SERVER_PORT environment variable or passing the `server_port` parameter to `launch()`."
+    )
+OSError: Cannot find empty port in range: 7860-7860. You can specify a different port by setting the GRADIO_SERVER_PORT environment variable or passing the `server_port` parameter to `launch()`.
