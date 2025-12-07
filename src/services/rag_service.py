@@ -106,6 +106,28 @@ class RAGService:
                     retrieval_count=0,
                 )
 
+            # Check if results are actually relevant (low confidence threshold)
+            top_score = search_results[0].score
+            if top_score < 0.65:
+                logger.warning(
+                    f"Low relevance score ({top_score:.3f}) - results may not match query",
+                    extra={"request_id": request_id, "top_score": top_score},
+                )
+
+                # Check if there's a country/citizenship mismatch
+                mismatch_message = self._detect_knowledge_gap(
+                    query.query, search_results
+                )
+                if mismatch_message:
+                    return RAGResponse(
+                        query=query.query,
+                        answer=mismatch_message,
+                        sources=search_results[:3],  # Include top 3 for reference
+                        confidence_score=top_score,
+                        processing_time=time.time() - start_time,
+                        retrieval_count=len(search_results),
+                    )
+
             # Step 2: Format context
             logger.debug(
                 "Step 2: Formatting context...", extra={"request_id": request_id}
@@ -147,10 +169,14 @@ class RAGService:
             # Prepare sources
             sources = search_results if include_sources else []
 
+            # Format context as array of document contents for test.py
+            retrieved_context = [result.document.content for result in search_results]
+
             response = RAGResponse(
                 query=query.query,
                 answer=answer,
                 sources=sources,
+                retrieved_context=retrieved_context,
                 confidence_score=confidence_score,
                 processing_time=total_duration,
                 retrieval_count=len(search_results),
@@ -219,6 +245,81 @@ class RAGService:
         confidence = 0.4 * top_score + 0.3 * top_3_avg + 0.3 * result_count_score
 
         return min(confidence, 1.0)
+
+    def _detect_knowledge_gap(
+        self, query: str, search_results: List[SearchResult]
+    ) -> Optional[str]:
+        """
+        Detect if the query asks about topics not in our knowledge base.
+
+        Args:
+            query: User query
+            search_results: Retrieved search results
+
+        Returns:
+            Warning message if knowledge gap detected, None otherwise
+        """
+        query_lower = query.lower()
+
+        # List of countries/citizenships we DON'T have data for
+        unsupported_countries = [
+            "china",
+            "chinese",
+            "brazil",
+            "brazilian",
+            "russia",
+            "russian",
+            "australia",
+            "australian",
+            "canada",
+            "canadian",
+            "france",
+            "french",
+            "germany",
+            "german",
+            "italy",
+            "italian",
+            "spain",
+            "spanish",
+            "mexico",
+            "mexican",
+            "argentina",
+            "south korea",
+            "korean",
+            "thailand",
+            "saudi",
+            "egypt",
+            "turkish",
+            "indonesia",
+        ]
+
+        # Check if query mentions unsupported countries
+        mentioned_unsupported = [
+            country for country in unsupported_countries if country in query_lower
+        ]
+
+        if mentioned_unsupported:
+            # Check if results are about India (indicating a mismatch)
+            top_result = search_results[0]
+            if hasattr(top_result.document, "source_country"):
+                source_country = top_result.document.source_country or ""
+                if "india" in source_country.lower():
+                    country_name = mentioned_unsupported[0].title()
+                    return f"""I apologize, but my knowledge base currently focuses on travel information for Indian citizens and travel to India. I don't have specific information about {country_name} citizens or {country_name}-specific visa requirements.
+
+My expertise covers:
+- Visa requirements for Indian citizens traveling abroad
+- Entry requirements for foreign nationals coming to India
+- General travel information for destinations popular with Indian travelers
+
+For {country_name}-specific visa and travel requirements, I recommend:
+1. Contacting the relevant embassy or consulate
+2. Visiting official government immigration websites
+3. Consulting with authorized visa service providers
+
+Is there anything about Indian travel requirements I can help you with instead?"""
+
+        return None
 
     async def process_query_stream(
         self, query: TravelQuery, chat_history: Optional[List[Dict[str, str]]] = None

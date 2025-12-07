@@ -140,6 +140,16 @@ class TravelAssistantGraph:
                 "sources": [
                     result.to_dict() for result in final_state.get("context", [])
                 ],
+                "retrieved_context": [
+                    {
+                        "id": result.document.id,
+                        "text": result.document.content,
+                        "score": result.score,
+                    }
+                    for result in final_state.get("context", [])
+                ]
+                if final_state.get("context")
+                else [{"id": "none", "text": "", "score": 0.0}],
                 "confidence_score": final_state.get("confidence_score", 0.0),
                 "processing_time": final_state.get("processing_time", 0.0),
                 "metadata": final_state.get("metadata", {}),
@@ -157,6 +167,7 @@ class TravelAssistantGraph:
                 "query": query,
                 "answer": f"Error processing query: {str(e)}",
                 "sources": [],
+                "retrieved_context": [{"id": "error", "text": "", "score": 0.0}],
                 "confidence_score": 0.0,
                 "processing_time": 0.0,
                 "metadata": {"error": str(e)},

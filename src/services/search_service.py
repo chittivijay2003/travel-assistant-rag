@@ -3,6 +3,7 @@
 import logging
 from typing import List, Optional, Dict, Any
 from collections import defaultdict
+from rank_bm25 import BM25Okapi
 
 from ..config.settings import settings
 from ..core.exceptions import SearchError
@@ -102,7 +103,7 @@ class SearchService:
         self, query: str, documents: List[TravelDocument], limit: int = 10
     ) -> List[SearchResult]:
         """
-        Perform keyword-based search using simple text matching.
+        Perform keyword-based search using BM25 algorithm.
 
         Args:
             query: Search query
@@ -110,39 +111,54 @@ class SearchService:
             limit: Maximum number of results
 
         Returns:
-            List of search results with keyword scores
+            List of search results with BM25 scores
         """
         request_id = generate_request_id()
 
         try:
             logger.debug(
-                f"Performing keyword search: {query[:100]}...",
+                f"Performing BM25 keyword search: {query[:100]}...",
                 extra={"request_id": request_id},
             )
 
-            query_terms = set(query.lower().split())
-            scored_docs = []
+            if not documents:
+                return []
 
+            # Prepare corpus for BM25
+            # Combine title (weighted) + content for better relevance
+            corpus = []
             for doc in documents:
-                # Calculate keyword match score
-                content_lower = doc.content.lower()
-                title_lower = doc.title.lower()
+                # Title appears twice to give it more weight in BM25 scoring
+                combined_text = f"{doc.title} {doc.title} {doc.content}"
+                corpus.append(combined_text.lower())
 
-                # Count term matches
-                content_matches = sum(
-                    1 for term in query_terms if term in content_lower
-                )
-                title_matches = sum(1 for term in query_terms if term in title_lower)
+            # Tokenize corpus
+            tokenized_corpus = [doc.split() for doc in corpus]
 
-                # Calculate score (title matches weighted higher)
-                score = (title_matches * 2.0 + content_matches) / (
-                    len(query_terms) * 3.0
-                )
+            # Initialize BM25 with default parameters (k1=1.5, b=0.75)
+            bm25 = BM25Okapi(tokenized_corpus)
 
+            # Tokenize query
+            tokenized_query = query.lower().split()
+
+            # Get BM25 scores for all documents
+            scores = bm25.get_scores(tokenized_query)
+
+            # Normalize scores to 0-1 range
+            max_score = max(scores) if len(scores) > 0 and max(scores) > 0 else 1.0
+
+            # Create search results
+            scored_docs = []
+            for idx, score in enumerate(scores):
                 if score > 0:
+                    normalized_score = float(score) / max_score
                     result = SearchResult(
-                        document=doc,
-                        score=min(score, 1.0),  # Normalize to 0-1
+                        document=documents[idx],
+                        score=normalized_score,
+                        metadata={
+                            "search_type": "keyword_bm25",
+                            "raw_bm25_score": float(score),
+                        },
                     )
                     scored_docs.append(result)
 
@@ -151,14 +167,14 @@ class SearchService:
             results = scored_docs[:limit]
 
             logger.debug(
-                f"Keyword search returned {len(results)} results",
+                f"BM25 keyword search returned {len(results)} results",
                 extra={"count": len(results), "request_id": request_id},
             )
 
             return results
 
         except Exception as e:
-            logger.error(f"Keyword search failed: {e}", exc_info=True)
+            logger.error(f"BM25 keyword search failed: {e}", exc_info=True)
             return []
 
     def reciprocal_rank_fusion(

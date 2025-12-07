@@ -35,7 +35,7 @@ class QdrantService:
         """Initialize Qdrant client."""
         self.collection_name = settings.qdrant_collection
         self.client: Optional[QdrantClient] = None
-        self.vector_size = 768  # Gemini embedding dimension
+        self.vector_size = 384  # Sentence Transformers embedding dimension
 
         logger.info(
             "Initializing Qdrant service",

@@ -57,6 +57,9 @@ app.add_middleware(LoggingMiddleware)
 app.include_router(health.router, prefix="/api/v1", tags=["Health"])
 app.include_router(rag.router, prefix="/api/v1", tags=["RAG"])
 
+# Legacy endpoint for test.py compatibility
+app.include_router(rag.router, prefix="", tags=["RAG (Legacy)"])
+
 
 @app.get("/")
 async def root():

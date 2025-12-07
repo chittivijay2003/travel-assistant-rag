@@ -122,7 +122,7 @@ Intent Classification (LangGraph Node)
 
 #### Step 1: Clone Repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/chittivijay2003/travel-assistant-rag.git
 cd travel-assistant-rag
 ```
 
@@ -162,7 +162,7 @@ nano .env  # or use any text editor
 ```bash
 GOOGLE_API_KEY=your_google_gemini_api_key_here
 GEMINI_MODEL=gemini-2.0-flash
-QDRANT_USE_MEMORY=true
+QDRANT_COLLECTION=travel_documents
 ```
 
 #### Step 5: Initialize Database
@@ -377,16 +377,11 @@ async with httpx.AsyncClient() as client:
 # ============================================================================
 GOOGLE_API_KEY=your_api_key_here          # Get from https://makersuite.google.com/
 GEMINI_MODEL=gemini-2.0-flash             # Options: gemini-2.0-flash, gemini-1.5-pro
-EMBEDDING_MODEL=models/embedding-001       # Google embedding model (not used currently)
 
 # ============================================================================
 # QDRANT VECTOR DATABASE
 # ============================================================================
-QDRANT_HOST=localhost                      # Qdrant server host
-QDRANT_PORT=6333                          # Qdrant server port
 QDRANT_COLLECTION=travel_documents        # Collection name
-QDRANT_API_KEY=                           # Optional: Qdrant Cloud API key
-QDRANT_USE_MEMORY=true                    # Use persistent local storage
 
 # ============================================================================
 # APPLICATION SETTINGS
@@ -396,32 +391,21 @@ ENVIRONMENT=development                    # development | production
 DEBUG=true                                # Enable debug mode
 
 # API Configuration
-API_HOST=0.0.0.0                          # API server host
 API_PORT=8000                             # API server port
-API_RELOAD=true                           # Auto-reload on code changes
 
 # UI Configuration  
 UI_PORT=7860                              # Gradio UI port
-UI_SHARE=false                            # Create public Gradio link
 
 # ============================================================================
 # LOGGING
 # ============================================================================
 LOG_LEVEL=INFO                            # DEBUG | INFO | WARNING | ERROR
-LOG_FILE=logs/app.log                     # Log file path
-LOG_FORMAT=json                           # json | text
-LOG_ROTATION=daily                        # Log rotation: daily | size
 
 # ============================================================================
-# SEARCH & RAG CONFIGURATION
+# LLM CONFIGURATION
 # ============================================================================
-SEARCH_TOP_K=5                            # Number of documents to retrieve
-HYBRID_ALPHA=0.7                          # Hybrid search weight (0=keyword, 1=semantic)
-
-# RAG Settings
-RAG_MAX_CONTEXT_LENGTH=2000               # Max context chars sent to LLM
-RAG_TEMPERATURE=0.7                       # LLM temperature (0=deterministic, 1=creative)
-RAG_MAX_TOKENS=1024                       # Max tokens in LLM response
+LLM_TEMPERATURE=0.7                       # LLM temperature (0=deterministic, 1=creative)
+LLM_MAX_TOKENS=1024                       # Max tokens in LLM response
 ```
 
 ### Configuration Parameters Explained
@@ -429,10 +413,7 @@ RAG_MAX_TOKENS=1024                       # Max tokens in LLM response
 | Parameter | Description | Default | Options |
 |-----------|-------------|---------|---------|
 | `GEMINI_MODEL` | Google Gemini model to use | `gemini-2.0-flash` | `gemini-2.0-flash`, `gemini-1.5-pro` |
-| `QDRANT_USE_MEMORY` | Storage mode | `true` | `true` (persistent local), `false` (connect to server) |
-| `SEARCH_TOP_K` | Documents retrieved per query | `5` | 1-20 |
-| `HYBRID_ALPHA` | Semantic vs keyword weight | `0.7` | 0.0-1.0 (0=keyword only, 1=semantic only) |
-| `RAG_TEMPERATURE` | LLM creativity | `0.7` | 0.0-2.0 (0=focused, 2=creative) |
+| `LLM_TEMPERATURE` | LLM creativity | `0.7` | 0.0-2.0 (0=focused, 2=creative) |
 | `LOG_LEVEL` | Logging verbosity | `INFO` | `DEBUG`, `INFO`, `WARNING`, `ERROR` |
 
 ### Advanced Configuration
@@ -442,10 +423,6 @@ RAG_MAX_TOKENS=1024                       # Max tokens in LLM response
 ENVIRONMENT=production
 DEBUG=false
 LOG_LEVEL=WARNING
-API_RELOAD=false
-QDRANT_USE_MEMORY=false              # Use Qdrant server
-QDRANT_HOST=your-qdrant-server.com
-QDRANT_API_KEY=your_qdrant_api_key
 ```
 
 **For Development:**

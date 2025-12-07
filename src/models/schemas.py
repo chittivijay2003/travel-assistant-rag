@@ -68,12 +68,23 @@ class SourceDocument(BaseModel):
     rank: Optional[int] = None
 
 
+class RetrievedContext(BaseModel):
+    """Retrieved context item for test.py compatibility."""
+
+    id: str
+    text: str
+    score: float
+
+
 class RAGResponse(BaseModel):
     """RAG query response schema."""
 
     query: str
     answer: str
     sources: List[SourceDocument] = Field(default_factory=list)
+    retrieved_context: List[RetrievedContext] = Field(
+        default_factory=list
+    )  # For test.py
     confidence_score: float = Field(ge=0.0, le=1.0)
     processing_time: float
     request_id: Optional[str] = None
